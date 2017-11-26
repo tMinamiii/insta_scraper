@@ -1,3 +1,4 @@
+import glob
 import json
 import os
 import requests
@@ -11,13 +12,15 @@ FAMOUS_ACCOUNTS = {'lavie_city', 'starbucks_j',
                    'estyle1010', 'keiyamazaki',
                    'feel_kiyomizudera', 'wat.ki'}
 PHOTOGENIC_DIR = 'photogenic'
+PIXEL_SIZE = 640  # 150 240 320 480
 
 
-def scrape(acc_name, base_dir):
-    acc_dir = '{}/{}'.format(base_dir, acc_name)
-    if not os.path.isdir(acc_dir):
-        os.mkdir(acc_dir)
+def find(dir_name):
+    return {os.path.basename(p) for p in
+            glob.glob('{}/*.jpg'.format(dir_name))}
 
+
+def scrape(acc_name, acc_dir, exists):
     acc_url = INSTAGRAM_URL + acc_name
     next_page_url = acc_url
 
@@ -34,7 +37,7 @@ def scrape(acc_name, base_dir):
         for n in nodes:
             thumnails = n['thumbnail_resources']
             for res in thumnails:
-                if res['config_height'] == 640:
+                if res['config_height'] == PIXEL_SIZE:
                     src_urls.append(res['src'])
 
         # 次のページを取得
@@ -47,6 +50,8 @@ def scrape(acc_name, base_dir):
 
     for src in tqdm(src_urls, ncols=100, ascii=True):
         filename = src.split('/')[-1]
+        if filename in exists:
+            continue
         filepath = '{}/{}'.format(acc_dir, filename)
         img = requests.get(src)
         with open(filepath, 'wb') as f:
@@ -54,13 +59,21 @@ def scrape(acc_name, base_dir):
         time.sleep(1)
 
 
-if not os.path.isdir(PHOTOGENIC_DIR):
-    os.mkdir(PHOTOGENIC_DIR)
+def main():
+    if not os.path.isdir(PHOTOGENIC_DIR):
+        os.mkdir(PHOTOGENIC_DIR)
+    args = sys.argv
+    if len(args) <= 1:
+        sys.exit()
 
-args = sys.argv
-if len(args) >= 1:
-    exit
+    acc_name = args[1:]
+    for acc in acc_name:
+        acc_dir = '{}/{}'.format(PHOTOGENIC_DIR, acc)
+        if not os.path.isdir(acc_dir):
+            os.mkdir(acc_dir)
+        exists = find(acc_dir)
+        scrape(acc, acc_dir, exists)
 
-acc_name = args[1:]
-for acc in acc_name:
-    scrape(acc, PHOTOGENIC_DIR)
+
+if __name__ == '__main__':
+    main()
