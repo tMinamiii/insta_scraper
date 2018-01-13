@@ -8,9 +8,6 @@ from bs4 import BeautifulSoup
 from tqdm import tqdm
 
 INSTAGRAM_URL = 'https://www.instagram.com/'
-FAMOUS_ACCOUNTS = {'lavie_city', 'starbucks_j',
-                   'estyle1010', 'keiyamazaki',
-                   'feel_kiyomizudera', 'wat.ki'}
 PHOTOGENIC_DIR = 'photogenic'
 PIXEL_SIZE = 640  # 150 240 320 480
 
@@ -57,6 +54,12 @@ def scrape(acc_name, acc_dir, exists):
         with open(filepath, 'wb') as f:
             f.write(img.content)
         time.sleep(1)
+
+
+FAMOUS_ACCOUNTS = {'lavie_city', 'starbucks_j',
+                   'estyle1010', 'keiyamazaki',
+                   'feel_kiyomizudera', 'wat.ki',
+                   'airio830'}
 
 
 def main():
