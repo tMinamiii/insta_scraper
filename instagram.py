@@ -1,15 +1,16 @@
 import glob
 import json
 import os
-import requests
-import time
 import sys
+import time
+
+import requests
 from bs4 import BeautifulSoup
 from tqdm import tqdm
 
+import settings
+
 INSTAGRAM_URL = 'https://www.instagram.com/'
-PHOTOGENIC_DIR = 'photogenic'
-PIXEL_SIZE = 640  # 150 240 320 480
 
 
 def find(dir_name):
@@ -34,7 +35,7 @@ def scrape(acc_name, acc_dir, exists):
         for n in nodes:
             thumnails = n['thumbnail_resources']
             for res in thumnails:
-                if res['config_height'] == PIXEL_SIZE:
+                if res['config_height'] == settings.PIXEL_SIZE:
                     src_urls.append(res['src'])
 
         # 次のページを取得
@@ -56,22 +57,16 @@ def scrape(acc_name, acc_dir, exists):
         time.sleep(1)
 
 
-FAMOUS_ACCOUNTS = {'lavie_city', 'starbucks_j',
-                   'estyle1010', 'keiyamazaki',
-                   'feel_kiyomizudera', 'wat.ki',
-                   'airio830'}
-
-
 def main():
-    if not os.path.isdir(PHOTOGENIC_DIR):
-        os.mkdir(PHOTOGENIC_DIR)
+    if not os.path.isdir(settings.SAVE_DIR):
+        os.mkdir(settings.SAVE_DIR)
     args = sys.argv
     if len(args) <= 1:
         sys.exit()
 
     acc_name = args[1:]
     for acc in acc_name:
-        acc_dir = '{}/{}'.format(PHOTOGENIC_DIR, acc)
+        acc_dir = '{}/{}'.format(settings.SAVE_DIR, acc)
         if not os.path.isdir(acc_dir):
             os.mkdir(acc_dir)
         exists = find(acc_dir)
